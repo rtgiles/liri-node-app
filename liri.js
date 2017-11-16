@@ -17,64 +17,95 @@ switch(liriCmd) {
 		console.log();
 		break;
 	case "do-what-it-says":
+		doWhatItSays();
 		console.log();
 		break;
 	default:
 		console.log("Please enter a valid command");
 }
 
+
 function movieChk(){
 	var movieName= "";
 	switch(liriInput){
-		case "":
-			movieName= "Mr.Nobody";
+		case undefined:
+			console.log(liriInput);
+			movieName= "Mr. Nobody";
 			break;
 		default :
-			for (var i = 2; i < liriInput.length; i++) {
-		  		if (i > 2 && i < liriInput.length) {
-		    		movieName = movieName + "+" + liriInput[i];
-		  		}
-		  		else {
-				    movieName += liriInput[i];
-				}
-			}
+			movieName= liriInput;
+			// for (var i = 2; i < liriInput.length; i++) {
+		 //  		if (i > 2 && i < liriInput.length) {
+		 //    		movieName = movieName + "+" + liriInput[i];
+		 //  		}
+		 //  		else {
+			// 	    movieName += liriInput[i];
+			// 	}
+			// }
 	}		
-	// Then run a request to the OMDB API with the movie specified
+	//Request to the OMDB API with the movie specified
 	var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&apikey=40e9cece";
 
-	// This line is just to help us debug against the actual URL.
-	console.log(queryUrl);
+	//console.log(queryUrl);
 
-	request(queryUrl, function(error, response, body) {
+	query(queryUrl, function(error, response, body) {
 
   		// If the request is successful
 	  	if (!error && response.statusCode === 200) {
-		    // Parse the body of the site and recover just the imdbRating
-		    // (Note: The syntax below for parsing isn't obvious. Just spend a few moments dissecting it).
-		    console.log("Title of the Movie: " + JSON.parse(body).Name);
+		    console.log("Title of the Movie: " + JSON.parse(body).Title);
 		    console.log("Year the movie came out: " + JSON.parse(body).Year);
 		    console.log("IMDB Rating of the movie: " + JSON.parse(body).imdbRating);
-		  //  console.log("Rotten Tomatoes Rating of the: " + JSON.parse(body).Ratings.Source='Rotten Tomatoes');
+		    console.log("Rotten Tomatoes Rating: " + JSON.parse(body).Ratings[1].Value);
 		    console.log("Country where the movie was produced: " + JSON.parse(body).Country);
 		    console.log("Language of the movie: " + JSON.parse(body).Language);
 		    console.log("Plot of the movie: " + JSON.parse(body).Plot);
 		    console.log("Actors in the movie: " + JSON.parse(body).Actors);
+		    if(liriInput=== undefined){
+		    	console.log("\n"+"If you haven't watched "+movieName+", then you should:"+"\n"+ "http://www.imdb.com/title/tt0485947/"+"\n"+"It's on Netflix")
+		    }
 	  	}
   	});
 }
 
 function spotifyChk(){
+	switch(liriInput){
+		case undefined:
+			console.log(liriInput);
+			liriInput= "The Sign";
+			break;
+		default :
+			break;
+	}
 	var SpotifyChk= require("node-spotify-api");
-	var spotifyId= require("./keys.js");
+	var spotifyId= require("./spotifykeys.js");
 	var spotifySong= new SpotifyChk({
-		id: spotifyId.spotifyKeys.clientID,
-		secret: spotifyId.spotifyKeys.clientSecrt,
+		id: spotifyId.clientID,
+		secret: spotifyId.clientSecrt,
 	});
 	spotifySong.search ({type: "track", query: liriInput}, function(error,data){
 			if(error){
 				return console.log("Error occured: " + error);
 			}
-			else{console.log(JSON.parse(data));}
+			else { 
+				//console.log(data);
+				//Need to put loop to capture data for "The Sign"
+
+				
+				var song= data.tracks.items;
+				
+				console.log("This is what was inputted: " + liriInput);
+				//console.log(song);
+				for(var i=0; i<song.length; i++){
+					if (song[i] != undefined){
+						console.log(
+						"Artist: " + song[i].artists[0].name + "\n" + 
+						"Song: " + song[i].name + "\n" +
+						"Album Name: " + song[i].album.name + "\n" + 
+						"Url: " + song[i].preview_url + "\n\n" + "END ARTIST "+ i + "\n"
+						);
+					}
+				}
+			}
 		}	
 	);
 }
@@ -97,4 +128,13 @@ function twitterChk(){
 	});
 }
 	
-function doWhatItSays(){}
+function doWhatItSays(){
+	fs.readFile("random.txt", function(error,data){
+		if(error){
+			console.log("Error Msg: " + error);
+		} else{
+			results= data.split(",");
+			spotifyChk(results[0],results[1]);
+		}
+	})
+}
