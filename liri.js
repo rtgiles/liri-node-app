@@ -6,19 +6,19 @@ var fs= require("fs");
 switch(liriCmd) {
 	case "my-tweets":
 		twitterChk(liriInput);
-		console.log();
+		console.log("End my-tweets");
 		break;
 	case "spotify-this-song":
 		spotifyChk(liriInput);
-		console.log();
+		console.log("End spotify-this-song");
 		break;
 	case "movie-this":
 		movieChk(liriInput);
-		console.log();
+		console.log("End movie-this");
 		break;
 	case "do-what-it-says":
 		doWhatItSays();
-		console.log();
+		console.log("End do-what-it-says");
 		break;
 	default:
 		console.log("Please enter a valid command");
@@ -113,12 +113,12 @@ function spotifyChk(){
 // Using the suggested twitter moddule
 function twitterChk(){
 	var Twitter= require("twitter");
-	var twitterChk= require("./keys.js");
+	var twitterKeys= require("./keys.js");
 	var client = new Twitter({
-	  consumer_key: keys.twitterKeys.consumer_key,
-	  consumer_secret: keys.twitterKeys.consumer_secret,
-	  access_token_key: keys.twitterKeys.access_token_key,
-	  access_token_secret: keys.twitterKeys.access_token_secret
+	  consumer_key: twitterKeys.consumer_key,
+	  consumer_secret: twitterKeys.consumer_secret,
+	  access_token_key: twitterKeys.access_token_key,
+	  access_token_secret: twitterKeys.access_token_secret
 	});
 	var twitterQueryUrl= "https://api.twitter.com/1.1/search/tweets.json";
 	client.get("search/tweets", function(error,tweets,response){
@@ -133,8 +133,17 @@ function doWhatItSays(){
 		if(error){
 			console.log("Error Msg: " + error);
 		} else{
-			results= data.split(",");
-			spotifyChk(results[0],results[1]);
+			results= String(data).split(",");
+			console.log(results);
+			liriInput= results[1];
+			spotifyChk(liriInput);
 		}
 	})
 }
+function writeMyData(data){
+	console.log(data);
+	fs.appendFile("log.txt", "data", (err) =>  {console.log("The ouput was appended to 'log.txt'.")
+	})
+}
+
+//Need to replace console.log with function writeMyData
